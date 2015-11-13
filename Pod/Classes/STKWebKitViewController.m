@@ -18,6 +18,7 @@
 @property(nonatomic) NSURLRequest *request;
 
 @property (nonatomic) BOOL toolbarWasHidden;
+@property (strong, nonatomic) UIActivityIndicatorView *spinner;
 @end
 
 @implementation STKWebKitViewController
@@ -172,9 +173,28 @@
     
     UIBarButtonItem *reloadItem;
     if (self.webView.isLoading) {
+        // put up a spinner while it loads
+        self.spinner = [[UIActivityIndicatorView alloc]
+                        
+                        initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        
+        CGRect frame = self.spinner.frame;
+        frame.origin.x = self.webView.frame.size.width / 2 - frame.size.width / 2;
+        frame.origin.y = self.webView.frame.size.height / 2 - frame.size.height / 2;
+        self.spinner.frame = frame;
+        
+        [self.webView addSubview:self.spinner];
+        [self.spinner startAnimating];
+
         reloadItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(stopTapped:)];
     } else {
         reloadItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(reloadTapped:)];
+        
+        if (self.spinner) {
+            [self.spinner stopAnimating];
+            [self.spinner removeFromSuperview];
+            self.spinner = nil;
+        }
     }
     UIBarButtonItem *shareItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareTapped:)];
     UIBarButtonItem *flexibleSpaceItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
